@@ -1,0 +1,2132 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מדריך למתחילים: ChatGPT</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #14141f;
+  --surface-2: #1e1e2e;
+  --surface-3: #282840;
+  --accent: #10b981;
+  --accent-glow: rgba(16, 185, 129, 0.3);
+  --accent-2: #6366f1;
+  --accent-3: #f59e0b;
+  --accent-4: #ef4444;
+  --text: #e8e8f0;
+  --text-dim: #9898b0;
+  --text-bright: #ffffff;
+  --border: rgba(255,255,255,0.08);
+  --radius: 16px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* ===== SLIDE SYSTEM ===== */
+.slides-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 60px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  overflow-y: auto;
+}
+
+.slide.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+  animation: slideIn 0.4s ease forwards;
+}
+
+.slide.exit {
+  visibility: visible;
+  animation: slideOut 0.35s ease forwards;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-12px); }
+}
+
+/* ===== NAV BAR ===== */
+.nav-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(14,14,20,0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 100;
+  padding: 0 24px;
+}
+
+.nav-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+  transform: scale(1.08);
+}
+
+.nav-btn:active { transform: scale(0.95); }
+
+.slide-counter {
+  font-size: 14px;
+  color: var(--text-dim);
+  min-width: 80px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.4s ease;
+  z-index: 100;
+  border-radius: 0 2px 2px 0;
+}
+
+/* ===== PROGRESS DOTS ===== */
+.dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.dot.active {
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+  width: 24px;
+  border-radius: 4px;
+}
+
+.dot:hover { background: var(--accent-2); transform: scale(1.3); }
+
+/* ===== TYPOGRAPHY ===== */
+.slide-title {
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 800;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, var(--text-bright), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.slide-subtitle {
+  font-size: clamp(16px, 2vw, 22px);
+  color: var(--text-dim);
+  text-align: center;
+  margin-bottom: 40px;
+  font-weight: 400;
+  max-width: 700px;
+}
+
+.section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+/* ===== COVER SLIDE ===== */
+.cover-icon {
+  width: 120px;
+  height: 120px;
+  border-radius: 32px;
+  background: linear-gradient(135deg, #10b981, #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  margin-bottom: 32px;
+  animation: float 3s ease-in-out infinite;
+  box-shadow: 0 16px 48px rgba(16,185,129,0.2);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.cover-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 100px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-top: 24px;
+}
+
+.cover-badge .pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.5); }
+}
+
+/* ===== CARDS GRID ===== */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+  transform-origin: right;
+}
+
+.card:hover {
+  border-color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(16,185,129,0.1);
+}
+
+.card:hover::before {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.card-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-bright);
+}
+
+.card-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+/* ===== FLIP CARDS ===== */
+.flip-card {
+  perspective: 1000px;
+  cursor: pointer;
+  min-height: 180px;
+}
+
+.flip-card-inner {
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-front, .flip-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: var(--radius);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.flip-front {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.flip-back {
+  background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+  border: 1px solid var(--accent);
+  transform: rotateY(180deg);
+}
+
+.flip-hint {
+  font-size: 11px;
+  color: var(--accent);
+  margin-top: 12px;
+  opacity: 0.7;
+}
+
+/* ===== INTERACTIVE PROMPT DEMO ===== */
+.prompt-demo {
+  width: 100%;
+  max-width: 800px;
+}
+
+.prompt-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+  transition: all 0.4s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.prompt-box.bad {
+  border-color: rgba(239,68,68,0.3);
+}
+
+.prompt-box.good {
+  border-color: rgba(16,185,129,0.3);
+}
+
+.prompt-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prompt-label.bad { color: var(--accent-4); }
+.prompt-label.good { color: var(--accent); }
+
+.prompt-text {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.prompt-result {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.prompt-result.show {
+  max-height: 300px;
+  opacity: 1;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.prompt-result-text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+/* ===== FEATURE EXPLORER ===== */
+.feature-explorer {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  gap: 24px;
+}
+
+.feature-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
+}
+
+.feature-tab {
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.25s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.feature-tab:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+
+.feature-tab.active {
+  background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(99,102,241,0.1));
+  border-color: var(--accent);
+  color: var(--text-bright);
+  font-weight: 600;
+}
+
+.feature-tab .tab-icon { font-size: 20px; }
+
+.feature-content {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  min-height: 280px;
+}
+
+.feature-content h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text-bright);
+}
+
+.feature-content p {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+
+.feature-content ul {
+  list-style: none;
+  padding: 0;
+}
+
+.feature-content li {
+  padding: 8px 0;
+  font-size: 14px;
+  color: var(--text);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.feature-content li::before {
+  content: '✦';
+  color: var(--accent);
+  font-size: 12px;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+/* ===== QUIZ ===== */
+.quiz-container {
+  width: 100%;
+  max-width: 700px;
+}
+
+.quiz-question {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  text-align: center;
+  color: var(--text-bright);
+}
+
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quiz-option {
+  padding: 18px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.quiz-option:hover {
+  border-color: var(--accent-2);
+  background: var(--surface-2);
+  transform: translateX(-4px);
+}
+
+.quiz-option.correct {
+  border-color: var(--accent) !important;
+  background: rgba(16,185,129,0.1) !important;
+}
+
+.quiz-option.wrong {
+  border-color: var(--accent-4) !important;
+  background: rgba(239,68,68,0.1) !important;
+}
+
+.quiz-option .option-letter {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--surface-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.quiz-option.correct .option-letter {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.quiz-option.wrong .option-letter {
+  background: var(--accent-4);
+  color: white;
+}
+
+.quiz-feedback {
+  margin-top: 20px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  display: none;
+}
+
+.quiz-feedback.show { display: block; }
+
+.quiz-feedback.correct-fb {
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.3);
+  color: var(--accent);
+}
+
+.quiz-feedback.wrong-fb {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: var(--accent-4);
+}
+
+/* ===== CHECKLIST ===== */
+.checklist {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 15px;
+}
+
+.check-item:hover { border-color: var(--accent); }
+
+.check-item.checked {
+  background: rgba(16,185,129,0.05);
+  border-color: rgba(16,185,129,0.3);
+}
+
+.check-box {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 2px solid var(--surface-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.check-item.checked .check-box {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.check-item.checked .check-text {
+  text-decoration: line-through;
+  color: var(--text-dim);
+}
+
+/* ===== ACCORDION ===== */
+.accordion {
+  width: 100%;
+  max-width: 750px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.accordion-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.accordion-item.open { border-color: var(--accent); }
+
+.accordion-header {
+  padding: 18px 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.accordion-header:hover { background: var(--surface-2); }
+
+.accordion-arrow {
+  transition: transform 0.3s;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.accordion-item.open .accordion-arrow { transform: rotate(180deg); }
+
+.accordion-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+
+.accordion-body-inner {
+  padding: 0 24px 20px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-dim);
+}
+
+/* ===== STEP COUNTER ===== */
+.steps-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  max-width: 900px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.step-card {
+  flex: 1;
+  min-width: 160px;
+  max-width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 18px;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.step-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--accent);
+  box-shadow: 0 12px 32px rgba(16,185,129,0.1);
+}
+
+.step-card .step-tooltip {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: var(--surface-3);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  width: 240px;
+  text-align: right;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.25s ease;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.step-card .step-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--accent);
+}
+
+.step-card:hover .step-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.step-num {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: white;
+  font-weight: 800;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+}
+
+.step-card h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-bright);
+}
+
+.step-card p {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* ===== TYPING ANIMATION ===== */
+.typing-demo {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  width: 100%;
+  max-width: 700px;
+  min-height: 120px;
+  position: relative;
+}
+
+.typing-label {
+  font-size: 12px;
+  color: var(--accent);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.typing-text {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text);
+  min-height: 60px;
+}
+
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 20px;
+  background: var(--accent);
+  margin-right: 4px;
+  animation: blink 1s step-end infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.typing-buttons {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.typing-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Heebo', sans-serif;
+}
+
+.typing-btn:hover {
+  border-color: var(--accent);
+  background: rgba(16,185,129,0.1);
+}
+
+.typing-btn.active-btn {
+  border-color: var(--accent);
+  background: rgba(16,185,129,0.15);
+  color: var(--accent);
+}
+
+/* ===== STAT COUNTER ===== */
+.stats-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 800px;
+}
+
+.stat-box {
+  text-align: center;
+  padding: 24px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 150px;
+  transition: all 0.3s;
+}
+
+.stat-box:hover {
+  transform: scale(1.05);
+  border-color: var(--accent);
+}
+
+.stat-num {
+  font-size: 40px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* ===== IMPORTANT BOX ===== */
+.important-box {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 700px;
+  width: 100%;
+}
+
+.important-box h4 {
+  color: var(--accent-3);
+  font-size: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.important-box p, .important-box li {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.important-box ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 8px;
+}
+
+.important-box li {
+  padding: 4px 0;
+}
+
+.important-box li::before {
+  content: '⚡';
+  margin-left: 8px;
+}
+
+/* ===== COMPARISON TABLE ===== */
+.compare-table {
+  width: 100%;
+  max-width: 800px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.compare-table th {
+  background: var(--surface-2);
+  padding: 16px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--text-bright);
+}
+
+.compare-table td {
+  padding: 14px 20px;
+  font-size: 14px;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+}
+
+.compare-table tr:hover td {
+  background: var(--surface-2);
+}
+
+/* ===== KEYBOARD SHORTCUTS ===== */
+.kbd {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: monospace;
+  color: var(--text-dim);
+  margin: 0 2px;
+}
+
+/* ===== SCROLL HINT ===== */
+.scroll-hint {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--text-dim);
+  opacity: 0.5;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-8px); }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .slide { padding: 24px 20px; }
+  .feature-explorer { flex-direction: column; }
+  .feature-tabs { flex-direction: row; overflow-x: auto; min-width: unset; }
+  .feature-tab { white-space: nowrap; font-size: 13px; }
+  .cards-grid { grid-template-columns: 1fr 1fr; }
+  .steps-row { flex-direction: column; align-items: center; }
+  .step-card { max-width: 100%; }
+  .stats-row { flex-direction: column; align-items: center; }
+}
+
+/* ===== ANIMATIONS ON ENTER ===== */
+.animate-in {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.slide.active .animate-in {
+  animation: fadeUp 0.4s ease forwards;
+}
+
+.slide.active .animate-in:nth-child(2) { animation-delay: 0.06s; }
+.slide.active .animate-in:nth-child(3) { animation-delay: 0.12s; }
+.slide.active .animate-in:nth-child(4) { animation-delay: 0.18s; }
+.slide.active .animate-in:nth-child(5) { animation-delay: 0.24s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== SLIDE CONTENT WRAPPER ===== */
+.slide-content {
+  max-width: 1000px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="slides-container" id="slidesContainer">
+
+  <!-- SLIDE 0: COVER -->
+  <div class="slide active" data-slide="0">
+    <div class="slide-content">
+      <div class="cover-icon animate-in">💬</div>
+      <div class="section-label animate-in">מדריך למתחילים</div>
+      <h1 class="slide-title animate-in">איך להשתמש ב-ChatGPT</h1>
+      <p class="slide-subtitle animate-in">כל מה שצריך לדעת כדי להתחיל לעבוד עם הכלי הכי פופולרי בעולם ה-AI - בצורה חכמה ויעילה</p>
+      <div class="cover-badge animate-in">
+        <span class="pulse"></span>
+        שיעור אינטראקטיבי - לחצו על הכרטיסיות, ענו על שאלות, נסו בעצמכם
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 1: WHAT IS CHATGPT -->
+  <div class="slide" data-slide="1">
+    <div class="slide-content">
+      <div class="section-label animate-in">הבסיס</div>
+      <h1 class="slide-title animate-in">מה זה בכלל ChatGPT?</h1>
+      <p class="slide-subtitle animate-in">עוזר דיגיטלי שמבוסס על בינה מלאכותית - אפשר לדבר איתו כמו עם אדם</p>
+      <div class="cards-grid animate-in">
+        <div class="card" onclick="this.classList.toggle('expanded')">
+          <span class="card-icon">🧠</span>
+          <div class="card-title">מבוסס AI</div>
+          <div class="card-desc">מודל שפה גדול (LLM) שאומן על כמויות עצומות של טקסט. הוא לא "יודע" - הוא "מחולל" תשובות על סמך דפוסים.</div>
+        </div>
+        <div class="card">
+          <span class="card-icon">💬</span>
+          <div class="card-title">שפה טבעית</div>
+          <div class="card-desc">פשוט כותבים מה רוצים, בעברית או באנגלית. לא צריך שפת תכנות או פקודות מיוחדות.</div>
+        </div>
+        <div class="card">
+          <span class="card-icon">🔄</span>
+          <div class="card-title">שיחה מתמשכת</div>
+          <div class="card-desc">הוא זוכר את ההקשר בתוך השיחה. אפשר לשפר, לתקן ולבקש שינויים שוב ושוב.</div>
+        </div>
+        <div class="card">
+          <span class="card-icon">⚠️</span>
+          <div class="card-title">לא מושלם - Human in the Loop</div>
+          <div class="card-desc">לפעמים טועה, ממציא פרטים, או נשמע בטוח גם כשהוא לא מדויק. תמיד צריך אדם שבודק ומאשר - זה נקרא <strong>Human in the Loop</strong>.</div>
+        </div>
+      </div>
+      <div class="important-box animate-in" style="margin-top: 24px;">
+        <h4>💡 העיקרון המרכזי</h4>
+        <p>לא "משתמשים באפליקציה" - אלא <strong>מנסחים בקשות טובות</strong>. ככל שההוראה ברורה יותר, כך התוצאה טובה יותר.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: CAPABILITIES EXPLORER -->
+  <div class="slide" data-slide="2">
+    <div class="slide-content">
+      <div class="section-label animate-in">יכולות</div>
+      <h1 class="slide-title animate-in">מה ChatGPT יודע לעשות?</h1>
+      <p class="slide-subtitle animate-in">לחצו על כל יכולת כדי ללמוד עליה</p>
+      <div class="feature-explorer animate-in">
+        <div class="feature-tabs" id="featureTabs">
+          <div class="feature-tab active" data-feature="writing" onclick="showFeature('writing', this)">
+            <span class="tab-icon">✍️</span> כתיבה וניסוח
+          </div>
+          <div class="feature-tab" data-feature="explain" onclick="showFeature('explain', this)">
+            <span class="tab-icon">💡</span> הסברים
+          </div>
+          <div class="feature-tab" data-feature="files" onclick="showFeature('files', this)">
+            <span class="tab-icon">📎</span> קבצים
+          </div>
+          <div class="feature-tab" data-feature="images" onclick="showFeature('images', this)">
+            <span class="tab-icon">🎨</span> תמונות
+          </div>
+          <div class="feature-tab" data-feature="voice" onclick="showFeature('voice', this)">
+            <span class="tab-icon">🎙️</span> שיחה קולית
+          </div>
+          <div class="feature-tab" data-feature="research" onclick="showFeature('research', this)">
+            <span class="tab-icon">🔬</span> מחקר מעמיק
+          </div>
+        </div>
+        <div class="feature-content" id="featureContent">
+          <h3>כתיבה וניסוח</h3>
+          <p>אחד השימושים החזקים ביותר ביום-יום. ChatGPT יכול לכתוב, לשפר, לתרגם ולארגן טקסטים.</p>
+          <ul>
+            <li>ניסוח מיילים מקצועיים ואישיים</li>
+            <li>שיפור וליטוש טקסט קיים</li>
+            <li>כתיבת פוסטים לרשתות חברתיות</li>
+            <li>תרגום בין שפות</li>
+            <li>סיכום מאמרים וטקסטים ארוכים</li>
+            <li>הפיכת רשימות למסמך מסודר</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: PROMPT QUALITY -->
+  <div class="slide" data-slide="3">
+    <div class="slide-content">
+      <div class="section-label animate-in">הסוד</div>
+      <h1 class="slide-title animate-in">הכל מתחיל בבקשה טובה</h1>
+      <p class="slide-subtitle animate-in">לחצו על כל דוגמה כדי לראות את ההבדל בתוצאה</p>
+      <div class="prompt-demo animate-in">
+        <div class="prompt-box bad" onclick="togglePromptResult(this)">
+          <div class="prompt-label bad">❌ בקשה חלשה - לחצו לתוצאה</div>
+          <div class="prompt-text">"תכתוב לי מייל לספק"</div>
+          <div class="prompt-result">
+            <div class="prompt-result-text">
+              <strong>תוצאה:</strong> "שלום, אני רוצה להזמין מוצרים. אנא שלחו לי פרטים. תודה."<br><br>
+              כללי מדי, חסר הקשר, לא ברור מה רוצים - ChatGPT ניחש לבד ויצר מייל שטחי שלא באמת שימושי.
+            </div>
+          </div>
+        </div>
+        <div class="prompt-box good" onclick="togglePromptResult(this)">
+          <div class="prompt-label good">✅ בקשה חזקה - לחצו לתוצאה</div>
+          <div class="prompt-text">"כתוב מייל עסקי מנומס לספק ציוד משרדי. אנחנו מגדילים הזמנה ב-30% ורוצים לבקש הנחת כמות. טון מקצועי, עד 5 שורות, בעברית."</div>
+          <div class="prompt-result">
+            <div class="prompt-result-text">
+              <strong>תוצאה:</strong> "שלום [שם הספק], לאור הגדלת הזמנתנו ב-30% לרבעון הקרוב, נשמח לדון באפשרות להנחת כמות. מדובר בשיתוף פעולה ארוך טווח שיכול להועיל לשני הצדדים. נשמח לתיאום שיחה בנוחותכם. בברכה, [שמי]"<br><br>
+              ההבדל: ציינתם <strong>מטרה</strong>, <strong>הקשר</strong>, <strong>טון</strong> ו<strong>אורך</strong>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: PROMPT FORMULA -->
+  <div class="slide" data-slide="4">
+    <div class="slide-content">
+      <div class="section-label animate-in">נוסחה</div>
+      <h1 class="slide-title animate-in">5 מרכיבים לפרומפט מנצח</h1>
+      <p class="slide-subtitle animate-in">העבירו את העכבר מעל כל שלב לדוגמה</p>
+      <div class="steps-row animate-in">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h4>מטרה</h4>
+          <p>מה אתם רוצים להשיג?</p>
+          <div class="step-tooltip">למשל: "כתוב לי מייל", "סכם את המאמר", "הסבר לי את הנושא"</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h4>הקשר</h4>
+          <p>רקע ומידע רלוונטי</p>
+          <div class="step-tooltip">למשל: "אני סטודנט שנה א'", "זה מייל לספק", "הקהל הוא מנהלים בכירים"</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h4>פורמט</h4>
+          <p>איך תרצו את התוצאה?</p>
+          <div class="step-tooltip">למשל: "ב-10 נקודות", "כטבלה", "כמייל קצר", "עם כותרות ותתי-כותרות"</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <h4>פירוט</h4>
+          <p>כמה עמוק ומפורט?</p>
+          <div class="step-tooltip">למשל: "עד 300 מילים", "בצורה פשוטה", "ברמת מתחילים", "עם דוגמאות"</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">5</div>
+          <h4>מגבלות</h4>
+          <p>מה לא לעשות</p>
+          <div class="step-tooltip">למשל: "בלי ז'רגון מקצועי", "בלי להיות תוקפני", "בלי לציין מקורות"</div>
+        </div>
+      </div>
+      <div class="typing-demo animate-in" style="margin-top: 32px;">
+        <div class="typing-label">דוגמה לפרומפט מושלם:</div>
+        <div class="typing-text" id="typingText"><span class="typing-cursor"></span></div>
+        <div class="typing-buttons">
+          <button class="typing-btn" onclick="typePrompt(0, this)">מייל מקצועי</button>
+          <button class="typing-btn" onclick="typePrompt(1, this)">סיכום מאמר</button>
+          <button class="typing-btn" onclick="typePrompt(2, this)">תכנון שיעור</button>
+          <button class="typing-btn" onclick="typePrompt(3, this)">פוסט לינקדאין</button>
+          <button class="typing-btn" onclick="typePrompt(4, this)">ניתוח בעיה</button>
+          <button class="typing-btn" onclick="typePrompt(5, this)">תכנון טיול</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: ITERATIVE WORK -->
+  <div class="slide" data-slide="5">
+    <div class="slide-content">
+      <div class="section-label animate-in">דרך עבודה</div>
+      <h1 class="slide-title animate-in">עבודה באיטרציות - לא צריך מושלם בפעם הראשונה</h1>
+      <p class="slide-subtitle animate-in">הדרך הנכונה לעבוד עם ChatGPT: טיוטה, שיפור, דיוק</p>
+      <div class="cards-grid animate-in" style="grid-template-columns: repeat(3, 1fr); max-width: 700px;">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <span class="card-icon">📝</span>
+              <div class="card-title">שלב 1: טיוטה</div>
+              <div class="card-desc">בקשו גרסה ראשונה</div>
+              <div class="flip-hint">לחצו להיפוך ←</div>
+            </div>
+            <div class="flip-back">
+              <div class="card-desc" style="color: var(--text);">"כתוב לי מייל לספק שמבקש הנחה על הזמנה גדולה"</div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <span class="card-icon">🔧</span>
+              <div class="card-title">שלב 2: שיפור</div>
+              <div class="card-desc">בקשו שינויים ממוקדים</div>
+              <div class="flip-hint">לחצו להיפוך ←</div>
+            </div>
+            <div class="flip-back">
+              <div class="card-desc" style="color: var(--text);">"תקצר את המייל, תוסיף נימוק עסקי, ותשמור על טון מנומס"</div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <span class="card-icon">✅</span>
+              <div class="card-title">שלב 3: דיוק</div>
+              <div class="card-desc">העתיקו והשתמשו</div>
+              <div class="flip-hint">לחצו להיפוך ←</div>
+            </div>
+            <div class="flip-back">
+              <div class="card-desc" style="color: var(--text);">"מצוין. עכשיו תוסיף שורת נושא למייל ותרגם לאנגלית"</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="important-box animate-in" style="margin-top: 32px;">
+        <h4>🔑 פקודות שיפור שימושיות</h4>
+        <ul>
+          <li>"תקצר"</li>
+          <li>"תכתוב בעברית פשוטה"</li>
+          <li>"תעשה את זה בטון יותר מקצועי"</li>
+          <li>"תוסיף דוגמה"</li>
+          <li>"תסדר לטבלה"</li>
+          <li>"תכתוב כמו מייל"</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: COMMON MISTAKES - QUIZ -->
+  <div class="slide" data-slide="6">
+    <div class="slide-content">
+      <div class="section-label animate-in">בואו נבדוק</div>
+      <h1 class="slide-title animate-in">איזו בקשה תיתן תוצאה טובה יותר?</h1>
+      <div class="quiz-container animate-in">
+        <div class="quiz-question">אתם רוצים לכתוב פוסט ללינקדאין. מה עדיף לכתוב?</div>
+        <div class="quiz-options" id="quiz1">
+          <div class="quiz-option" onclick="answerQuiz(this, false, 'quiz1')">
+            <span class="option-letter">א</span>
+            <span>"תעזור לי עם לינקדאין"</span>
+          </div>
+          <div class="quiz-option" onclick="answerQuiz(this, false, 'quiz1')">
+            <span class="option-letter">ב</span>
+            <span>"תכתוב לי פוסט"</span>
+          </div>
+          <div class="quiz-option" onclick="answerQuiz(this, true, 'quiz1')">
+            <span class="option-letter">ג</span>
+            <span>"כתוב פוסט ללינקדאין על שימוש ב-AI בעבודה, 100-150 מילים, טון מקצועי אבל נגיש, עם שאלה מעניינת בסוף"</span>
+          </div>
+          <div class="quiz-option" onclick="answerQuiz(this, false, 'quiz1')">
+            <span class="option-letter">ד</span>
+            <span>"אני צריך תוכן שיווקי"</span>
+          </div>
+        </div>
+        <div class="quiz-feedback" id="quiz1-feedback"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: ADVANCED FEATURES -->
+  <div class="slide" data-slide="7">
+    <div class="slide-content">
+      <div class="section-label animate-in">פיצ'רים מתקדמים</div>
+      <h1 class="slide-title animate-in">פיצ'רים שכדאי להכיר</h1>
+      <p class="slide-subtitle animate-in">לחצו על כל פיצ'ר לפרטים נוספים</p>
+      <div class="accordion animate-in">
+        <div class="accordion-item" onclick="toggleAccordion(this)">
+          <div class="accordion-header">
+            <span>🎯 Custom Instructions - התאמה אישית</span>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-body-inner">
+              אפשר להגדיר ל-ChatGPT מראש איך לענות לכם. למשל: "תענה בעברית", "תהיה תמציתי", "אני מנהל שיווק". ההוראות האלה חלות על כל השיחות עד שמשנים אותן. מגדירים בהגדרות -> Custom Instructions.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item" onclick="toggleAccordion(this)">
+          <div class="accordion-header">
+            <span>🧠 Memory - זיכרון</span>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-body-inner">
+              ChatGPT יכול לזכור פרטים עליכם בין שיחות: העדפות, שם, תחום עיסוק, דרך עבודה. אפשר לבקש ממנו במפורש "תזכור ש..." ואפשר למחוק זיכרונות דרך ההגדרות. לשיחות רגישות, השתמשו ב-Temporary Chat.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item" onclick="toggleAccordion(this)">
+          <div class="accordion-header">
+            <span>📁 Projects - מרחב עבודה</span>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-body-inner">
+              פרויקט הוא סביבת עבודה מסודרת לנושא מתמשך. אפשר לשמור שם שיחות, קבצים, הוראות קבועות והקשר. ככה ChatGPT נשאר "בתוך הנושא" ולא צריך להסביר כל פעם מחדש.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item" onclick="toggleAccordion(this)">
+          <div class="accordion-header">
+            <span>🔬 Deep Research - מחקר מעמיק</span>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-body-inner">
+              למשימות מחקר מורכבות: ChatGPT אוסף מידע, עובר על מקורות, משלב קבצים שהעליתם, ומפיק דוח מסודר עם סימוכין. מתאים למחקרי שוק, סקירות ספרות, השוואות מקיפות.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item" onclick="toggleAccordion(this)">
+          <div class="accordion-header">
+            <span>🤖 GPTs - גרסאות מותאמות</span>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-body-inner">
+              GPTs הם גרסאות מותאמות אישית של ChatGPT למשימות מסוימות. יש GPTs לכתיבה, עיצוב, תרגום, שיווק ועוד. אפשר למצוא אותם ב-GPT Store, ואפשר גם לבנות בעצמכם.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item" onclick="toggleAccordion(this)">
+          <div class="accordion-header">
+            <span>⏰ Tasks - משימות מתוזמנות</span>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-body-inner">
+              אפשר להגדיר משימות עתידיות כמו תזכורות, סיכומים יומיים, או בדיקות מתוזמנות. ChatGPT יבצע את המשימה בזמן שהגדרתם וישלח לכם את התוצאה.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: WHEN TO USE WHAT -->
+  <div class="slide" data-slide="8">
+    <div class="slide-content">
+      <div class="section-label animate-in">מתי משתמשים במה</div>
+      <h1 class="slide-title animate-in">מפת הכלים</h1>
+      <p class="slide-subtitle animate-in">בחרו את הכלי הנכון למשימה</p>
+      <table class="compare-table animate-in">
+        <thead>
+          <tr>
+            <th>המשימה</th>
+            <th>הכלי המתאים</th>
+            <th>דוגמה</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>שאלה מהירה / ניסוח</td>
+            <td>💬 צ'אט רגיל</td>
+            <td>"נסח לי מייל קצר"</td>
+          </tr>
+          <tr>
+            <td>עבודה על מסמך</td>
+            <td>📎 העלאת קובץ</td>
+            <td>"סכם את ה-PDF הזה"</td>
+          </tr>
+          <tr>
+            <td>מחקר עם מקורות</td>
+            <td>🔬 Deep Research</td>
+            <td>"חקור את השוק של X"</td>
+          </tr>
+          <tr>
+            <td>עבודה מתמשכת</td>
+            <td>📁 Project</td>
+            <td>"תיק לקוח", "פרויקט גמר"</td>
+          </tr>
+          <tr>
+            <td>התאמה קבועה</td>
+            <td>🎯 Custom Instructions</td>
+            <td>"תמיד תענה בעברית"</td>
+          </tr>
+          <tr>
+            <td>בנהיגה / הליכה</td>
+            <td>🎙️ Voice Mode</td>
+            <td>חשיבה בקול, תרגול שפה</td>
+          </tr>
+          <tr>
+            <td>משימה חוזרת</td>
+            <td>🤖 GPT מותאם</td>
+            <td>"עוזר כתיבה ייעודי"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: USE CASES -->
+  <div class="slide" data-slide="9">
+    <div class="slide-content">
+      <div class="section-label animate-in">שימושים</div>
+      <h1 class="slide-title animate-in">שימושים נפוצים למתחילים</h1>
+      <p class="slide-subtitle animate-in">לחצו על כל קטגוריה לדוגמאות</p>
+      <div class="cards-grid animate-in" style="grid-template-columns: repeat(3, 1fr); max-width: 800px;">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <span class="card-icon">📚</span>
+              <div class="card-title">ללימודים</div>
+              <div class="card-desc">הסברים, סיכומים, שאלות חזרה</div>
+              <div class="flip-hint">לחצו לדוגמאות ←</div>
+            </div>
+            <div class="flip-back">
+              <div class="card-desc" style="color: var(--text); font-size: 13px; line-height: 1.8;">
+                • הסבר על חומר לא מובן<br>
+                • סיכום מאמר<br>
+                • בניית שאלות חזרה<br>
+                • יצירת כרטיסיות זיכרון<br>
+                • לימוד צעד-אחר-צעד
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <span class="card-icon">💼</span>
+              <div class="card-title">לעבודה</div>
+              <div class="card-desc">מיילים, מסמכים, ניתוח</div>
+              <div class="flip-hint">לחצו לדוגמאות ←</div>
+            </div>
+            <div class="flip-back">
+              <div class="card-desc" style="color: var(--text); font-size: 13px; line-height: 1.8;">
+                • ניסוח מיילים<br>
+                • כתיבת מסמכים<br>
+                • סיכום פגישות<br>
+                • השוואת חלופות<br>
+                • ניתוח קבצים ונתונים
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-front">
+              <span class="card-icon">🏠</span>
+              <div class="card-title">לחיים האישיים</div>
+              <div class="card-desc">טיולים, מתכונים, רעיונות</div>
+              <div class="flip-hint">לחצו לדוגמאות ←</div>
+            </div>
+            <div class="flip-back">
+              <div class="card-desc" style="color: var(--text); font-size: 13px; line-height: 1.8;">
+                • תכנון טיול<br>
+                • בניית תפריט שבועי<br>
+                • עזרה במתכונים<br>
+                • ניסוח הודעות<br>
+                • רעיונות למתנות
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10: COMMON MISTAKES -->
+  <div class="slide" data-slide="10">
+    <div class="slide-content">
+      <div class="section-label animate-in">שגיאות נפוצות</div>
+      <h1 class="slide-title animate-in">5 טעויות של מתחילים</h1>
+      <p class="slide-subtitle animate-in">סמנו את אלו שקרו גם לכם</p>
+      <div class="checklist animate-in">
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <span class="check-text"><strong>שאלה כללית מדי</strong> - "תעזור לי" במקום לפרט במה בדיוק</span>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <span class="check-text"><strong>ציפייה למושלם בפעם הראשונה</strong> - הדרך הנכונה היא טיוטה ← שיפור ← דיוק</span>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <span class="check-text"><strong>לא בודקים עובדות</strong> - במיוחד במידע מקצועי, רפואי, משפטי</span>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <span class="check-text"><strong>לא מציינים קהל יעד</strong> - בלי לציין למי, ChatGPT יבחר לבד רמה וסגנון</span>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <span class="check-text"><strong>בקשה אחת ענקית</strong> - עדיף לחלק: קודם תקציר, אח"כ הרחבה, אח"כ ניסוח סופי</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11: RELIABILITY -->
+  <div class="slide" data-slide="11">
+    <div class="slide-content">
+      <div class="section-label animate-in">חשוב לדעת</div>
+      <h1 class="slide-title animate-in">על אמינות ואחריות</h1>
+      <div class="cards-grid animate-in" style="grid-template-columns: 1fr 1fr; max-width: 800px;">
+        <div class="card" style="border-color: rgba(16,185,129,0.2);">
+          <span class="card-icon">✅</span>
+          <div class="card-title" style="color: var(--accent);">ChatGPT מצוין ל-</div>
+          <div class="card-desc">
+            • סידור מחשבות<br>
+            • ניסוח ולימוד<br>
+            • תרגום ותקצור<br>
+            • טיוטות ראשוניות<br>
+            • ניתוח ראשוני<br>
+            • סיעור מוחות
+          </div>
+        </div>
+        <div class="card" style="border-color: rgba(239,68,68,0.2);">
+          <span class="card-icon">⚠️</span>
+          <div class="card-title" style="color: var(--accent-4);">פחות מתאים בתור-</div>
+          <div class="card-desc">
+            • מקור סופי יחיד<br>
+            • ייעוץ רפואי/משפטי<br>
+            • נתונים סטטיסטיים מדויקים<br>
+            • החלטות פיננסיות<br>
+            • עובדות שדורשות ודאות<br>
+            • מידע עדכני לרגע זה
+          </div>
+        </div>
+      </div>
+      <div class="important-box animate-in" style="margin-top: 24px;">
+        <h4>⚡ 3 כללי זהב</h4>
+        <ul style="list-style: none;">
+          <li>1. לבקש מקורות כשצריך מידע עובדתי</li>
+          <li>2. לבקש ש-ChatGPT יציין מה הוא לא בטוח לגביו</li>
+          <li>3. לאמת מול מקור מהימן לפני החלטות חשובות</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 12: MODELS -->
+  <div class="slide" data-slide="12">
+    <div class="slide-content">
+      <div class="section-label animate-in">מודלים</div>
+      <h1 class="slide-title animate-in">מודלים ותוכניות</h1>
+      <p class="slide-subtitle animate-in">למה לפעמים התוצאה שונה?</p>
+      <div class="cards-grid animate-in" style="grid-template-columns: repeat(3, 1fr); max-width: 800px;">
+        <div class="card">
+          <span class="card-icon">⚡</span>
+          <div class="card-title">מודל מהיר</div>
+          <div class="card-desc">לרוב המשימות היומיומיות. מהיר, יעיל, ומספיק טוב ל-90% מהצרכים.</div>
+        </div>
+        <div class="card">
+          <span class="card-icon">🧠</span>
+          <div class="card-title">Thinking</div>
+          <div class="card-desc">למשימות קשות יותר שדורשות חשיבה עמוקה. איטי יותר אבל מדויק יותר.</div>
+        </div>
+        <div class="card">
+          <span class="card-icon">💎</span>
+          <div class="card-title">תוכניות בתשלום</div>
+          <div class="card-desc">יותר מגבלות שימוש רחבות, יותר יכולות, גישה לפיצ'רים מתקדמים.</div>
+        </div>
+      </div>
+      <div class="important-box animate-in" style="margin-top: 24px;">
+        <h4>💡 טיפ</h4>
+        <p>לא חייבים תוכנית בתשלום כדי להתחיל. הגרסה החינמית מספיקה ללמוד את העקרונות ולעבוד עם רוב היכולות הבסיסיות.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 13: KEY TERMS -->
+  <div class="slide" data-slide="13">
+    <div class="slide-content">
+      <div class="section-label animate-in">מילון</div>
+      <h1 class="slide-title animate-in">מושגים שכדאי להכיר</h1>
+      <p class="slide-subtitle animate-in">לחצו על כל מושג להסבר</p>
+      <div class="cards-grid animate-in" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); max-width: 800px;">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner" style="min-height: 140px;">
+            <div class="flip-front" style="text-align: center;">
+              <div class="card-title" style="font-size: 18px;">Prompt</div>
+              <div class="flip-hint">לחצו להגדרה</div>
+            </div>
+            <div class="flip-back" style="text-align: center;">
+              <div class="card-desc" style="color: var(--text);">הבקשה שאתם כותבים ל-ChatGPT. ככל שהפרומפט טוב יותר - התוצאה טובה יותר.</div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner" style="min-height: 140px;">
+            <div class="flip-front" style="text-align: center;">
+              <div class="card-title" style="font-size: 18px;">Context</div>
+              <div class="flip-hint">לחצו להגדרה</div>
+            </div>
+            <div class="flip-back" style="text-align: center;">
+              <div class="card-desc" style="color: var(--text);">ההקשר של השיחה: מה כבר נאמר, אילו קבצים הועלו, ומה המטרה.</div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner" style="min-height: 140px;">
+            <div class="flip-front" style="text-align: center;">
+              <div class="card-title" style="font-size: 18px;">Memory</div>
+              <div class="flip-hint">לחצו להגדרה</div>
+            </div>
+            <div class="flip-back" style="text-align: center;">
+              <div class="card-desc" style="color: var(--text);">פרטים ש-ChatGPT זוכר עליכם בין שיחות. אפשר לנהל ולמחוק.</div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner" style="min-height: 140px;">
+            <div class="flip-front" style="text-align: center;">
+              <div class="card-title" style="font-size: 18px;">LLM</div>
+              <div class="flip-hint">לחצו להגדרה</div>
+            </div>
+            <div class="flip-back" style="text-align: center;">
+              <div class="card-desc" style="color: var(--text);">Large Language Model - מודל שפה גדול. הטכנולוגיה שמאחורי ChatGPT ועוד כלים.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 14: PROMPT EXAMPLES WITH TYPING -->
+  <div class="slide" data-slide="14">
+    <div class="slide-content">
+      <div class="section-label animate-in">תרגול</div>
+      <h1 class="slide-title animate-in">דוגמאות לפרומפטים טובים</h1>
+      <p class="slide-subtitle animate-in">לחצו על כל דוגמה לפרטים</p>
+      <div class="accordion animate-in">
+        <div class="accordion-item" onclick="toggleAccordion(this)">
+          <div class="accordion-header">
+            <span>📝 סיכום</span>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-body-inner">
+              <strong>"סכם לי את המאמר הזה ב-8 משפטים פשוטים, ואז תן 3 מסקנות עיקריות."</strong><br><br>
+              למה זה טוב? כי ציינתם: פורמט (משפטים), כמות (8), ותוספת (3 מסקנות).
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item" onclick="toggleAccordion(this)">
+          <div class="accordion-header">
+            <span>📚 לימוד</span>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-body-inner">
+              <strong>"תסביר לי את הנושא כאילו אני מתחיל, ואז תן לי 5 שאלות לבדיקה עצמית."</strong><br><br>
+              למה זה טוב? ציינתם רמה (מתחיל) וביקשתם פעולה נוספת (שאלות).
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item" onclick="toggleAccordion(this)">
+          <div class="accordion-header">
+            <span>✉️ מייל</span>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-body-inner">
+              <strong>"כתוב לי מייל מקצועי, קצר ומנומס, שבו אני מבקש לדחות פגישה לשבוע הבא."</strong><br><br>
+              למה זה טוב? ציינתם: סגנון (מקצועי, מנומס), אורך (קצר), ותוכן (דחיית פגישה).
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item" onclick="toggleAccordion(this)">
+          <div class="accordion-header">
+            <span>🗂️ ארגון מידע</span>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-body-inner">
+              <strong>"הנה רשימת הערות לא מסודרת. סדר לי אותן למסמך ברור עם כותרות ותתי-כותרות."</strong><br><br>
+              למה זה טוב? נתתם חומר גולמי וביקשתם פורמט מסודר ספציפי.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item" onclick="toggleAccordion(this)">
+          <div class="accordion-header">
+            <span>📊 ניתוח קובץ</span>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-body-inner">
+              <strong>"אני מעלה קובץ אקסל. נתח את הנתונים, מצא מגמות עיקריות, והצע לי 3 תובנות שימושיות."</strong><br><br>
+              למה זה טוב? ציינתם מה לעשות (לנתח), מה לחפש (מגמות), וכמה תוצאות (3 תובנות).
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 15: WORKFLOW -->
+  <div class="slide" data-slide="15">
+    <div class="slide-content">
+      <div class="section-label animate-in">דרך עבודה</div>
+      <h1 class="slide-title animate-in">7 צעדים להתחלה נכונה</h1>
+      <div class="steps-row animate-in" style="flex-wrap: wrap;">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h4>פתחו שיחה</h4>
+          <p>כתבו מה אתם רוצים להשיג</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h4>ציינו הקשר</h4>
+          <p>קהל יעד, סגנון, אורך</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h4>בקשו טיוטה</h4>
+          <p>תנו ל-ChatGPT לייצר גרסה ראשונה</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <h4>שפרו</h4>
+          <p>בקשו שינויים ממוקדים</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">5</div>
+          <h4>העלו קובץ</h4>
+          <p>אם יש מסמך, שלבו אותו</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">6</div>
+          <h4>השתמשו בפרויקט</h4>
+          <p>לעבודה מתמשכת</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">7</div>
+          <h4>הגדירו סגנון</h4>
+          <p>Custom Instructions לקביעות</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 16: QUIZ 2 -->
+  <div class="slide" data-slide="16">
+    <div class="slide-content">
+      <div class="section-label animate-in">בדיקת ידע</div>
+      <h1 class="slide-title animate-in">בואו נבדוק מה למדנו</h1>
+      <div class="quiz-container animate-in">
+        <div class="quiz-question">יש לכם PDF ארוך ואתם רוצים סיכום. מה הדרך הטובה ביותר?</div>
+        <div class="quiz-options" id="quiz2">
+          <div class="quiz-option" onclick="answerQuiz(this, false, 'quiz2')">
+            <span class="option-letter">א</span>
+            <span>להעתיק ולהדביק את כל הטקסט לשיחה</span>
+          </div>
+          <div class="quiz-option" onclick="answerQuiz(this, true, 'quiz2')">
+            <span class="option-letter">ב</span>
+            <span>להעלות את הקובץ ולכתוב "סכם את המסמך ב-10 נקודות, תן דגש על X"</span>
+          </div>
+          <div class="quiz-option" onclick="answerQuiz(this, false, 'quiz2')">
+            <span class="option-letter">ג</span>
+            <span>לכתוב "סכם לי" בלי להעלות שום דבר</span>
+          </div>
+          <div class="quiz-option" onclick="answerQuiz(this, false, 'quiz2')">
+            <span class="option-letter">ד</span>
+            <span>לפתוח את הקובץ בנפרד ולשאול שאלות בזיכרון</span>
+          </div>
+        </div>
+        <div class="quiz-feedback" id="quiz2-feedback"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 17: SUMMARY -->
+  <div class="slide" data-slide="17">
+    <div class="slide-content">
+      <div class="section-label animate-in">סיכום</div>
+      <h1 class="slide-title animate-in">השורה התחתונה</h1>
+      <p class="slide-subtitle animate-in">ChatGPT הוא בעיקר 3 דברים למתחיל</p>
+      <div class="stats-row animate-in">
+        <div class="stat-box">
+          <div class="stat-num">💡</div>
+          <div class="stat-label">מסביר</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">✍️</div>
+          <div class="stat-label">כותב</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">🗂️</div>
+          <div class="stat-label">מארגן</div>
+        </div>
+      </div>
+      <p class="slide-subtitle animate-in" style="margin-top: 32px; margin-bottom: 24px;">ואחרי שמתרגלים, מגלים שהוא גם:</p>
+      <div class="stats-row animate-in">
+        <div class="stat-box">
+          <div class="stat-num">🔬</div>
+          <div class="stat-label">חוקר</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">📊</div>
+          <div class="stat-label">מנתח</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">🤝</div>
+          <div class="stat-label">עוזר לחשוב</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">⏱️</div>
+          <div class="stat-label">חוסך זמן</div>
+        </div>
+      </div>
+      <div class="important-box animate-in" style="margin-top: 32px;">
+        <h4>🔑 הסוד</h4>
+        <p>לא צריך "לדעת את כל הכפתורים". צריך לדעת לתת משימה ברורה, לבדוק את התוצאה, ולשפר יחד איתו.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 18: THANK YOU -->
+  <div class="slide" data-slide="18">
+    <div class="slide-content">
+      <div class="cover-icon animate-in" style="background: linear-gradient(135deg, #6366f1, #10b981);">🚀</div>
+      <h1 class="slide-title animate-in">עכשיו תורכם!</h1>
+      <p class="slide-subtitle animate-in">פתחו את ChatGPT ונסו בעצמכם. התחילו עם משהו פשוט - מייל, שאלה, סיכום. תראו כמה מהר אתם מתרגלים.</p>
+      <div class="animate-in" style="margin-top: 32px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 28px 40px; text-align: center; max-width: 480px; width: 100%;">
+        <div style="font-size: 22px; font-weight: 800; color: var(--text-bright); margin-bottom: 20px;">חמי בן לביא</div>
+        <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--text);">
+            <span style="font-size: 18px;">📱</span>
+            <span dir="ltr">054-460-8119</span>
+          </div>
+          <a href="https://www.linkedin.com/in/hemi-ben-lavi/" target="_blank" style="display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--accent); text-decoration: none; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+            <span style="font-size: 18px;">💼</span>
+            <span>linkedin.com/in/hemi-ben-lavi</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAVIGATION -->
+<div class="nav-bar" style="direction: ltr;">
+  <button class="nav-btn" onclick="goToSlide(currentSlide - 1)" title="הקודם">←</button>
+  <div class="slide-counter" id="slideCounter">1 / 19</div>
+  <div class="dots" id="dotsContainer"></div>
+  <button class="nav-btn" onclick="goToSlide(currentSlide + 1)" title="הבא">→</button>
+</div>
+
+<script>
+let currentSlide = 0;
+const totalSlides = document.querySelectorAll('.slide').length;
+
+// Initialize dots
+const dotsContainer = document.getElementById('dotsContainer');
+for (let i = 0; i < totalSlides; i++) {
+  const dot = document.createElement('div');
+  dot.className = 'dot' + (i === 0 ? ' active' : '');
+  dot.onclick = () => goToSlide(i);
+  dotsContainer.appendChild(dot);
+}
+
+function goToSlide(index) {
+  if (index < 0 || index >= totalSlides || index === currentSlide) return;
+
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.dot');
+  const prevSlide = currentSlide;
+
+  // Exit current slide
+  slides[prevSlide].classList.remove('active');
+  slides[prevSlide].classList.add('exit');
+  dots[prevSlide].classList.remove('active');
+
+  // Clean up exit animation after it finishes
+  setTimeout(() => {
+    slides[prevSlide].classList.remove('exit');
+  }, 350);
+
+  // Enter new slide
+  currentSlide = index;
+  slides[currentSlide].classList.add('active');
+  dots[currentSlide].classList.add('active');
+
+  // Update counter & progress
+  document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+  document.getElementById('progressBar').style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+}
+
+// Keyboard navigation (Right/Down/Space = next, Left/Up = previous)
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+    e.preventDefault();
+    goToSlide(currentSlide + 1);
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    goToSlide(currentSlide - 1);
+  }
+});
+
+// Touch/swipe support
+let touchStartX = 0;
+document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+document.addEventListener('touchend', (e) => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) {
+    if (diff > 0) goToSlide(currentSlide + 1); // swipe left = next (RTL)
+    else goToSlide(currentSlide - 1);
+  }
+});
+
+// Feature explorer
+const featureData = {
+  writing: {
+    title: 'כתיבה וניסוח',
+    desc: 'אחד השימושים החזקים ביותר ביום-יום. ChatGPT יכול לכתוב, לשפר, לתרגם ולארגן טקסטים.',
+    items: ['ניסוח מיילים מקצועיים ואישיים', 'שיפור וליטוש טקסט קיים', 'כתיבת פוסטים לרשתות חברתיות', 'תרגום בין שפות', 'סיכום מאמרים וטקסטים ארוכים', 'הפיכת רשימות למסמך מסודר']
+  },
+  explain: {
+    title: 'הסברים ושאלות',
+    desc: 'אפשר לבקש הסבר על כמעט כל נושא, ברמות שונות: לילד, לסטודנט, למקצוען.',
+    items: ['הסבר פשוט על נושאים מורכבים', 'התאמת רמת ההסבר לקהל', 'שאלות ותשובות אינטראקטיביות', 'פירוק נושא לצעדים', 'השוואה בין מושגים']
+  },
+  files: {
+    title: 'העלאת קבצים',
+    desc: 'אפשר להעלות PDF, מסמכים, מצגות וטקסטים, ואז לעבוד עליהם.',
+    items: ['סיכום מסמכים ארוכים', 'חילוץ מידע ממסמכים', 'שאלות ותשובות על הקובץ', 'השוואה בין מסמכים', 'הפקת טיוטה מחומר קיים']
+  },
+  images: {
+    title: 'יצירת תמונות',
+    desc: 'אפשר לבקש ליצור תמונה מתיאור טקסטואלי, ואפילו לערוך תמונות קיימות.',
+    items: ['יצירת תמונות מתיאור', 'עריכת תמונות קיימות', 'עיצוב לוגואים ואיורים', 'יצירת תמונות לפוסטים', 'המחשה ויזואלית של רעיונות']
+  },
+  voice: {
+    title: 'שיחה קולית',
+    desc: 'מצב שבו מדברים עם ChatGPT והוא עונה בקול. שימושי בנסיעות, תרגול שפה, וחשיבה בקול.',
+    items: ['שיחה חופשית בקול', 'תרגול שפה זרה', 'סיעור מוחות תוך כדי הליכה', 'שימוש ללא ידיים (נהיגה)', 'הסברים קוליים על נושאים']
+  },
+  research: {
+    title: 'מחקר מעמיק (Deep Research)',
+    desc: 'למשימות מורכבות: איסוף מידע ממקורות, שילוב קבצים, והפקת דוח מסודר עם סימוכין.',
+    items: ['מחקרי שוק', 'סקירות ספרות', 'השוואות מקיפות', 'דוחות עם מקורות', 'ניתוח תחרותי']
+  }
+};
+
+function showFeature(key, tabEl) {
+  const data = featureData[key];
+  const content = document.getElementById('featureContent');
+
+  // Update active tab
+  document.querySelectorAll('.feature-tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+
+  // Animate content
+  content.style.opacity = '0';
+  content.style.transform = 'translateY(10px)';
+
+  setTimeout(() => {
+    content.innerHTML = `
+      <h3>${data.title}</h3>
+      <p>${data.desc}</p>
+      <ul>${data.items.map(i => `<li>${i}</li>`).join('')}</ul>
+    `;
+    content.style.opacity = '1';
+    content.style.transform = 'translateY(0)';
+  }, 200);
+
+  content.style.transition = 'opacity 0.3s, transform 0.3s';
+}
+
+// Prompt result toggle
+function togglePromptResult(box) {
+  const result = box.querySelector('.prompt-result');
+  result.classList.toggle('show');
+}
+
+// Quiz
+function answerQuiz(option, isCorrect, quizId) {
+  const options = document.querySelectorAll(`#${quizId} .quiz-option`);
+  const feedback = document.getElementById(`${quizId}-feedback`);
+
+  // Disable all options
+  options.forEach(o => { o.style.pointerEvents = 'none'; });
+
+  if (isCorrect) {
+    option.classList.add('correct');
+    feedback.className = 'quiz-feedback show correct-fb';
+    feedback.textContent = quizId === 'quiz1'
+      ? 'נכון! בקשה מפורטת עם נושא, אורך, סגנון ומבנה תיתן תוצאה הרבה יותר טובה.'
+      : 'מצוין! העלאת הקובץ ישירות + בקשה ממוקדת = התוצאה הכי טובה.';
+  } else {
+    option.classList.add('wrong');
+    // Show correct answer
+    options.forEach(o => {
+      if ((quizId === 'quiz1' && o === options[2]) || (quizId === 'quiz2' && o === options[1])) {
+        o.classList.add('correct');
+      }
+    });
+    feedback.className = 'quiz-feedback show wrong-fb';
+    feedback.textContent = quizId === 'quiz1'
+      ? 'לא בדיוק. התשובה הנכונה היא ג - ככל שהבקשה מפורטת יותר, התוצאה טובה יותר.'
+      : 'לא בדיוק. התשובה הנכונה היא ב - העלאת הקובץ עם בקשה ממוקדת.';
+  }
+}
+
+// Accordion
+function toggleAccordion(item) {
+  const wasOpen = item.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.accordion-item').forEach(i => {
+    i.classList.remove('open');
+    i.querySelector('.accordion-body').style.maxHeight = '0';
+  });
+  // Open clicked if was closed
+  if (!wasOpen) {
+    item.classList.add('open');
+    const body = item.querySelector('.accordion-body');
+    body.style.maxHeight = body.scrollHeight + 'px';
+  }
+}
+
+// Checklist
+function toggleCheck(item) {
+  item.classList.toggle('checked');
+}
+
+// Typing animation
+const promptExamples = [
+  'אני כותב מייל לספק שאני רוצה לבקש ממנו הנחת כמות. כתוב מייל מקצועי, קצר, מנומס, שמסביר שאנחנו מגדילים הזמנה ומבקשים הנחה של 15%. בלי להיות תוקפני.',
+  'סכם לי את המאמר המצורף ב-8 משפטים ברורים. אח"כ תן 3 מסקנות עיקריות ו-2 שאלות פתוחות שנובעות מהמאמר. הכל בעברית פשוטה.',
+  'אני מכין שיעור לתלמידי תיכון על שינויי אקלים. בנה לי מערך שיעור של 45 דקות: פתיחה מסקרנת, 3 נקודות מרכזיות עם דוגמאות, פעילות אינטראקטיבית, וסיכום. כולל שאלות לדיון.',
+  'כתוב לי פוסט ללינקדאין בעברית על חשיבות בינה מלאכותית בעבודה. 100-150 מילים, טון אישי ומעשי, עם שאלה אחת בסוף שמעודדת תגובות. בלי קלישאות.',
+  'אני מנהל מוצר ויש לי בעיה: המשתמשים לא משלימים את תהליך ה-onboarding. עזור לי לנתח 3 סיבות אפשריות ו-2 פתרונות מעשיים לכל אחת. פורמט: טבלה.',
+  'אני מתכנן טיול של 5 ימים לפורטוגל עם בת זוגי, תקציב בינוני. בנה לי לו"ז יומי כולל: 2-3 אטרקציות ביום, המלצת מסעדה אחת לארוחת ערב, ועצת הגעה/תחבורה. בלי מסלולי תיירות רגילים.'
+];
+
+let typingTimeout = null;
+
+function typePrompt(index, btn) {
+  // Update active button
+  document.querySelectorAll('.typing-btn').forEach(b => b.classList.remove('active-btn'));
+  btn.classList.add('active-btn');
+
+  const textEl = document.getElementById('typingText');
+  const text = promptExamples[index];
+
+  // Clear previous
+  if (typingTimeout) clearTimeout(typingTimeout);
+  textEl.innerHTML = '<span class="typing-cursor"></span>';
+
+  let i = 0;
+  function type() {
+    if (i < text.length) {
+      textEl.innerHTML = text.substring(0, i + 1) + '<span class="typing-cursor"></span>';
+      i++;
+      typingTimeout = setTimeout(type, 25);
+    }
+  }
+  type();
+}
+
+// Initialize progress bar
+document.getElementById('progressBar').style.width = `${(1 / totalSlides) * 100}%`;
+</script>
+
+</body>
+</html>
